@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Poker Casino</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f4f7f9;
+            margin: 0; /* Remove default margin */
+        }
+
+        .content {
+            display: flex;
+            flex-direction: row;
+            flex: 1;
+        }
+        .sidebar {
+            flex: 0 0 20%; /* Set sidebar width */
+            background-color: #333; /* Dark background color */
+            color: white; /* White text color */
+            padding: 20px;
+        }
+
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .info-label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .info-value {
+            font-style: italic;
+        }
+
+        .money-made-section {
+            margin-top: 20px;
+        }
+        /* Add styles for winner section */
+        .winner-info {
+            margin-top: 20px;
+        }
+
+        .winner-label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .winner-value {
+            font-style: italic;
+            font-size: 1.2em; /* Adjust font size for winner */
+        }
+
+        /* Hide winner section if winner is empty */
+        .winner-info[hidden] {
+            display: none;
+        }
+        .balance-info,
+        .bet-info {
+            margin-top: 10px;
+        }
+        .poker-table {
+            position: relative;
+            width: 80%;
+            height: 50vh;
+            background-color: #006400;
+            border-radius: 50% / 25%;
+            margin: auto;
+            margin-top: 50px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .player-label {
+            position: absolute;
+            color: black;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .player {
+            position: absolute;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin: 0;
+            z-index: 0;
+        }
+        .bet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .bet-item {
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        /* Center align the winner section */
+        .text-center {
+            text-align: center;
+        }
+
+        /* Make winner info bigger */
+        .winner-info {
+            margin-top: 20px;
+        }
+
+        .winner-label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .winner-value {
+            font-style: italic;
+            font-size: 3em; /* Adjust font size for winner */
+        }
+
+        .bet-info {
+            font-size: 16px;
+        }
+        .player img {
+            max-width: 80px;
+            max-height: 120px;
+        }
+
+        .flop1 {
+            top: calc(50% - 75px);
+            left: calc(26%);
+        }
+        .flop2 {
+            top: calc(50% - 75px);
+            left: calc(36%);
+        }
+        .flop3 {
+            top: calc(50% - 75px);
+            left: calc(46%);
+        }
+        .turn {
+            top: calc(50% - 75px);
+            left: calc(56%);
+        }
+        .river {
+            top: calc(50% - 75px);
+            left: calc(66%);
+        }
+
+        .player1-label {
+            top: calc(50% + 50px);
+            left: calc(0%);
+        }
+
+        .player1-card {
+            top: calc(50% - 75px);
+            left: calc(-5%);
+        }
+
+        .player2-label {
+            top: calc(25% - 25px);
+            left: calc(50% - 100px);
+        }
+
+        .player2-card {
+            top: calc(10% - 75px);
+            left: calc(50% - 200px);
+        }
+
+        .player3-label {
+            top: calc(25% - 25px);
+            right: calc(50% - 200px);
+        }
+
+        .player3-card {
+            top: calc(10% - 75px);
+            right: calc(50% - 200px);
+        }
+
+        .player4-label {
+            top: calc(50% + 50px);
+            right: calc(0%);
+        }
+
+        .player4-card {
+            top: calc(50% - 75px);
+            right: calc(-5%);
+        }
+
+        .player5-label {
+            bottom: calc(25% - 25px);
+            right: calc(50% - 200px);
+        }
+
+        .player5-card {
+            bottom: calc(10% - 75px);
+            right: calc(50% - 200px);
+        }
+
+        .player6-label {
+            bottom: calc(25% - 25px);
+            left: calc(50% - 100px);
+        }
+
+        .player6-card {
+            bottom: calc(10% - 75px);
+            left: calc(50% - 200px);
+        }
+
+        .sidebar-btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .betting-btn{
+            margin-bottom: 10px;
+        }
+
+    </style>
+</head>
+
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="padding: 10px 5%;">
+    <div class="container d-flex justify-content-center">
+        <span class="text-light mx-2" style="font-size: 2.2em;" >Poker Casino</span>
+    </div>
+</nav>
+<div class="content">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <form action="/redeal" method="get">
+            <button class="btn btn-primary sidebar-btn" type="submit">Redeal Cards</button>
+        </form>
+        <form action="/deal-flop" method="get">
+            <button class="btn btn-primary sidebar-btn" type="submit">Deal Flop</button>
+        </form>
+        <form action="/deal-turn" method="get">
+            <button class="btn btn-primary sidebar-btn" type="submit">Deal Turn</button>
+        </form>
+        <form action="/deal-river" method="get">
+            <button class="btn btn-primary sidebar-btn" type="submit">Deal River</button>
+        </form>
+        <div class="betting-section">
+            <form action="/bet-on-player" method="post">
+                <input type="hidden" name="playerIndex" value="0">
+                <button class="btn btn-primary betting-btn" type="submit">Bet on Player 1</button>
+                <input type="number" step="0.01" min="0" name="betAmount" placeholder="Enter bet amount">
+            </form>
+            <form action="/bet-on-player" method="post">
+                <input type="hidden" name="playerIndex" value="1">
+                <button class="btn btn-primary betting-btn" type="submit">Bet on Player 2</button>
+                <input type="number" step="0.01" min="0" name="betAmount" placeholder="Enter bet amount">
+            </form>
+            <form action="/bet-on-player" method="post">
+                <input type="hidden" name="playerIndex" value="2">
+                <button class="btn btn-primary betting-btn" type="submit">Bet on Player 3</button>
+                <input type="number" step="0.01" min="0" name="betAmount" placeholder="Enter bet amount">
+            </form>
+            <form action="/bet-on-player" method="post">
+                <input type="hidden" name="playerIndex" value="3">
+                <button class="btn btn-primary betting-btn" type="submit">Bet on Player 4</button>
+                <input type="number" step="0.01" min="0" name="betAmount" placeholder="Enter bet amount">
+            </form>
+            <form action="/bet-on-player" method="post">
+                <input type="hidden" name="playerIndex" value="4">
+                <button class="btn btn-primary betting-btn" type="submit">Bet on Player 5</button>
+                <input type="number" step="0.01" min="0" name="betAmount" placeholder="Enter bet amount">
+            </form>
+            <form action="/bet-on-player" method="post">
+                <input type="hidden" name="playerIndex" value="5">
+                <button class="btn btn-primary betting-btn" type="submit">Bet on Player 6</button>
+                <input type="number" step="0.01" min="0" name="betAmount" placeholder="Enter bet amount">
+            </form>
+            <!-- Add similar forms for other players -->
+        </div>
+        <div class="betting-history">
+            <h1>Bets Made</h1>
+            <div class="bet-grid">
+                <!-- Iterate over the list of bets and render each bet -->
+                <div class="bet-item" th:each="bet : ${bets}">
+                    <div class="bet-info">
+                        <span>Player <span th:text="${bet.playerIndex + 1}"></span></span>
+                        <span> | Bet Amount: <span th:text="${bet.bet}"></span></span>
+                        <span> | Quota: <span th:text="${bet.quota}"></span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 mt-4">
+                <div class="poker-table">
+                    <!-- Flop 1 -->
+                    <div class="player flop1">
+                        <img th:src="@{'/images/' + ${boardCards[0]}}" alt="Flop 1">
+                    </div>
+
+                    <div class="player flop2">
+                        <img th:src="@{'/images/' + ${boardCards[1]}}" alt="Flop 2">
+                    </div>
+
+                    <div class="player flop3">
+                        <img th:src="@{'/images/' + ${boardCards[2]}}" alt="Flop 3">
+                    </div>
+
+                    <div class="player turn">
+                        <img th:src="@{'/images/' + ${boardCards[3]}}" alt="Turn">
+                    </div>
+
+                    <div class="player river">
+                        <img th:src="@{'/images/' + ${boardCards[4]}}" alt="River">
+                    </div>
+
+                    <!-- Player 1 -->
+                    <!-- Player 1 -->
+                    <div class="player-label player1-label" th:text="'Player 1: ' + ${quotas[0]}"> Player 1</div>
+                    <div class="player player1-card">
+                        <img th:src="@{'/images/' + ${imageFilenames[0]}}" alt="Card 1">
+                        <img th:src="@{'/images/' + ${imageFilenames[1]}}" alt="Card 2">
+                    </div>
+
+                    <!-- Player 2 -->
+                    <div class="player-label player2-label" th:text="'Player 2: ' + ${quotas[1]}"> Player 2</div>
+                    <div class="player player2-card">
+                        <img th:src="@{'/images/' + ${imageFilenames[2]}}" alt="Card 1">
+                        <img th:src="@{'/images/' + ${imageFilenames[3]}}" alt="Card 2">
+                    </div>
+
+                    <!-- Player 3 -->
+                    <div class="player-label player3-label" th:text="'Player 3: ' + ${quotas[2]}"> Player 3</div>
+                    <div class="player player3-card">
+                        <img th:src="@{'/images/' + ${imageFilenames[4]}}" alt="Card 3">
+                        <img th:src="@{'/images/' + ${imageFilenames[5]}}" alt="Card 3">
+                    </div>
+
+                    <!-- Player 4 -->
+                    <div class="player-label player4-label" th:text="'Player 4: ' + ${quotas[3]}"> Player 4</div>
+                    <div class="player player4-card">
+                        <img th:src="@{'/images/' + ${imageFilenames[6]}}" alt="Card 4">
+                        <img th:src="@{'/images/' + ${imageFilenames[7]}}" alt="Card 4">
+                    </div>
+
+                    <!-- Player 5 -->
+                    <div class="player-label player5-label" th:text="'Player 5: ' + ${quotas[4]}"> Player 5</div>
+                    <div class="player player5-card">
+                        <img th:src="@{'/images/' + ${imageFilenames[8]}}" alt="Card 5">
+                        <img th:src="@{'/images/' + ${imageFilenames[9]}}" alt="Card 5">
+                    </div>
+
+                    <!-- Player 6 -->
+                    <div class="player-label player6-label" th:text="'Player 6: ' + ${quotas[5]}"> Player 6</div>
+                    <div class="player player6-card">
+                        <img th:src="@{'/images/' + ${imageFilenames[10]}}" alt="Card 6">
+                        <img th:src="@{'/images/' + ${imageFilenames[11]}}" alt="Card 6">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br/>
+        <br/>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="money-made-section">
+                    <!-- Display winner info only if winner is not empty -->
+                    <div class="text-center"> <!-- Center align the content -->
+                        <div th:if="${winner != ''}" class="winner-info">
+                            <span class="info-label winner-label">Winner:</span>
+                            <span class="info-value winner-value" th:text="${winner}"></span>
+                        </div>
+                    </div>
+                    <!-- Display balance and casino balance info -->
+                    <div class="balance-info">
+                        <span class="info-label">My Balance:</span>
+                        <span class="info-value" th:text="${balance}"></span>
+                    </div>
+                    <div class="balance-info">
+                        <span class="info-label">Casino Balance:</span>
+                        <span class="info-value" th:text="${casinobalance}"></span>
+                    </div>
+                </div>
+                <div class="money-made">
+                    <div class="bet-info">
+                        <span class="info-label">Sum of all bets made:</span>
+                        <span class="info-value" th:text="${sumOfBets}"></span>
+                    </div>
+                    <div class="bet-info">
+                        <span class="info-label">Money made:</span>
+                        <span class="info-value" th:text="${sumMoneyWon}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<footer class="footer mt-auto py-3 text-center bg-dark">
+    <div class="container">
+        <span class="text-white">Poker Betting</span>
+    </div>
+</footer>
+</body>
+
+</html>
